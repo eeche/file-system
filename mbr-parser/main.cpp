@@ -17,8 +17,8 @@ struct PartitionTableEntry {
 };
 
 void usage() {
-	printf("syntas: mbr_parser <file>\n");
-	printf("sample: mbr_parser a.dd\n");
+	printf("syntas: mbr-parser <file>\n");
+	printf("sample: mbr-parser a.dd\n");
 }
 
 uint32_t ltob(uint8_t* bytes) {
