@@ -10,7 +10,7 @@ struct GPTHeader {
     uint8_t signature[8];
     uint8_t revision[4];
     uint8_t headerSize[4];
-    uint8_t CRC32ofHeader[4];
+    uint8_t CRC32OfHeader[4];
     uint8_t reserved[4];
     uint8_t currentLBA[8];
     uint8_t backupLBA[8];
@@ -18,9 +18,9 @@ struct GPTHeader {
     uint8_t lastUsableLBA[8];
     uint8_t diskGUID[16];
     uint8_t partitionEntriesStartingLBA[8];
-    uint8_t numberofPartitionEntries[4];
-    uint8_t sizeofPartitionEntry[4];
-    uint8_t CRC32ofPartitionArray[4];
+    uint8_t numberOfPartitionEntries[4];
+    uint8_t sizeOfPartitionEntry[4];
+    uint8_t CRC32OfPartitionArray[4];
 };
 
 struct PartitionTableEntry {
@@ -109,7 +109,7 @@ void read_partition_table(char* file_name) {
     
     struct GPTHeader* header = (struct GPTHeader*)malloc(sizeof(struct GPTHeader));
     fread(header, sizeof(struct GPTHeader), 1, file);
-    uint32_t entry_num = ltob_32(header->numberofPartitionEntries);
+    uint32_t entry_num = ltob_32(header->numberOfPartitionEntries);
     
     gpt_parser(file, entry_num);
     
