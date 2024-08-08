@@ -96,7 +96,6 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Invalid starting_cluster value: %s\n", argv[2]);
         return 1;
     }
-    printf("%d ", start_cluster);
     read_boot_sector(file, start_cluster);
 
     return 0;
