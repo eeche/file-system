@@ -43,24 +43,24 @@ uint32_t ltob_32(uint8_t* bytes) {
 	return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
 }
 
-void read_fat_chain(FILE* file, uint32_t start_sector, uint32_t reserved_size, uint32_t bytes_per_sector, uint32_t sector_per_cluster) {
-    uint32_t current_sector = start_sector;
-    uint32_t fat_offset, sector_number;
+void read_fat_chain(FILE* file, uint32_t start_cluster, uint32_t reserved_size, uint32_t bytes_per_sector, uint32_t sector_per_cluster) {
+    uint32_t current_cluster = start_cluster;
+    uint32_t fat_offset, cluster_number;
     uint8_t buffer[4];
 
-    while (current_sector != 0xFFFFFFF) {
-        printf("%d ", current_sector);
-        fat_offset = current_sector * 4;
-        sector_number = reserved_size * bytes_per_sector + fat_offset;
+    while (current_cluster != 0xFFFFFFF) {
+        printf("%d ", current_cluster);
+        fat_offset = current_cluster * 4;
+        cluster_number = reserved_size * bytes_per_sector + fat_offset;
 
-        fseek(file, sector_number, SEEK_SET);
+        fseek(file, cluster_number, SEEK_SET);
         fread(buffer, sizeof(buffer), 1, file);
-        current_sector = ltob_32(buffer);
+        current_cluster = ltob_32(buffer);
     }
     printf("\n");
 }
 
-void read_boot_sector(const char* file_name, int start_sector) {
+void read_boot_sector(const char* file_name, int start_cluster) {
     FILE* file = fopen(file_name, "rb");
     if (file == NULL) {
         perror("fopen");
@@ -72,7 +72,7 @@ void read_boot_sector(const char* file_name, int start_sector) {
     uint32_t sector_per_cluster = bs->sectorPerCluster;
     uint32_t reserved_size = bs->reservedSectorCount;
     uint32_t fat_size = bs->FATSize32;
-    read_fat_chain(file, start_sector, reserved_size, bytes_per_sector, sector_per_cluster);
+    read_fat_chain(file, start_cluster, reserved_size, bytes_per_sector, sector_per_cluster);
 
     free(bs);
     fclose(file);
@@ -89,15 +89,15 @@ int main(int argc, char* argv[]) {
     char* endptr;
     
     // 문자열을 정수로 변환합니다.
-    int start_sector = strtol(argv[2], &endptr, 10);
+    int start_cluster = strtol(argv[2], &endptr, 10);
     
     // 변환 오류 검사
     if (*endptr != '\0') {
         fprintf(stderr, "Invalid starting_cluster value: %s\n", argv[2]);
         return 1;
     }
-    printf("%d ", start_sector);
-    read_boot_sector(file, start_sector);
+    printf("%d ", start_cluster);
+    read_boot_sector(file, start_cluster);
 
     return 0;
 }
