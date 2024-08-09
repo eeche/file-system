@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #define SECTOR 512
-
 struct GPTHeader {
     uint8_t signature[8];
     uint8_t revision[4];
@@ -24,10 +23,11 @@ struct GPTHeader {
 };
 
 struct PartitionTableEntry {
-    uint8_t t_guid_lfield[4];
-    uint8_t t_guid_mfield[2];
-    uint8_t t_guid_hfield_version[2];
-    uint8_t t_guid_big[8];
+    // uint8_t t_guid_lfield[4];
+    // uint8_t t_guid_mfield[2];
+    // uint8_t t_guid_hfield_version[2];
+    // uint8_t t_guid_big[8];
+    uint8_t t_guid[16];
     uint8_t u_guid[16];
 	uint8_t firstLBA[8];
 	uint8_t lastLBA[8];
@@ -63,12 +63,12 @@ int is_empty_partition(struct PartitionTableEntry* entry) {
 
 void get_GUID(struct PartitionTableEntry* guid) {
     // check if the GUID is valid
-    printf("%08X%04X%04X", 
-           ltob_32((uint8_t*)&guid->t_guid_lfield),
-           ltob_16((uint8_t*)&guid->t_guid_mfield),
-           ltob_16((uint8_t*)&guid->t_guid_hfield_version));
-    for (int i = 0; i < 8; i++) {
-        printf("%02X", guid->t_guid_big[i]);
+    // printf("%08X%04X%04X", 
+    //        ltob_32((uint8_t*)&guid->t_guid_lfield),
+    //        ltob_16((uint8_t*)&guid->t_guid_mfield),
+    //        ltob_16((uint8_t*)&guid->t_guid_hfield_version));
+    for (int i = 0; i < 16; i++) {
+        printf("%02X", guid->t_guid[i]);
     }
 }
 
@@ -95,7 +95,7 @@ void gpt_parser(FILE* file, uint32_t entry_num) {
         }
         uint64_t start_point = ltob_64(entry->firstLBA);
         uint64_t partition_size = ltob_64(entry->lastLBA) - start_point + 1;
-        get_GUID((struct PartitionTableEntry*)&entry->t_guid_lfield);
+        get_GUID((struct PartitionTableEntry*)&entry->t_guid);
         printf(" ");
         get_partition_type(file, start_point);
         printf("%llu %llu\n", start_point, partition_size);
