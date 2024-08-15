@@ -93,7 +93,7 @@ uint64_t convert_to_big_endian(uint8_t* bytes, int size) {
 
 void read_runlist(FILE* file, uint32_t offset, uint16_t runlist_offset) {
     uint32_t runlist = offset + runlist_offset + 1;
-    uint64_t prev_lcn = 0;
+    uint64_t lcn = 0;
 
     while(1) {
         fseek(file, runlist, SEEK_SET);
@@ -123,9 +123,8 @@ void read_runlist(FILE* file, uint32_t offset, uint16_t runlist_offset) {
             if (run_offset_size > 0 && (offset & ((uint64_t)1 << (run_offset_size * 8 - 1)))) {
                 offset |= ~0ULL << (run_offset_size * 8);
             }
-            
-            uint64_t lcn = prev_lcn + offset;
-            prev_lcn = lcn;
+            // printf("%ld %ld\n", lcn, offset);
+            lcn = lcn + offset;
             
             printf("%ld\n", lcn);
             runlist += run_offset_size;
