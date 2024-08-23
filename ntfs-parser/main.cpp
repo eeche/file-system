@@ -51,8 +51,8 @@ struct AttributeHeader {
 };
 
 struct NonResident {
-    uint64_t startVCN;
-    uint64_t endVCN;
+    uint8_t startVCN[8];
+    uint8_t endVCN[8];
     uint8_t runListOffset[2];
     uint16_t compressionUnitSize;
     uint32_t padding;
@@ -92,10 +92,11 @@ uint64_t convert_to_big_endian(uint8_t* bytes, int size) {
 }
 
 void read_runlist(FILE* file, uint32_t offset, uint16_t runlist_offset) {
-    uint32_t runlist = offset + runlist_offset + 1;
+    uint32_t runlist = offset + runlist_offset;
     uint64_t lcn = 0;
 
     while(1) {
+        // printf("%X\n", runlist);
         fseek(file, runlist, SEEK_SET);
         uint8_t byte;
         fread(&byte, sizeof(uint8_t), 1, file);
@@ -111,7 +112,7 @@ void read_runlist(FILE* file, uint32_t offset, uint16_t runlist_offset) {
             uint8_t run_length[8] = {0};  // 최대 8바이트 할당
             fread(run_length, run_length_size, 1, file);
             uint64_t length = convert_to_big_endian(run_length, run_length_size);
-            printf("%lu ", length);
+            // printf("%lu ", length);
             runlist += run_length_size;
 
             fseek(file, runlist, SEEK_SET);
@@ -126,7 +127,8 @@ void read_runlist(FILE* file, uint32_t offset, uint16_t runlist_offset) {
             // printf("%ld %ld\n", lcn, offset);
             lcn = lcn + offset;
             
-            printf("%ld\n", lcn);
+            printf("%ld ", lcn);
+            printf("%lu\n", length);
             runlist += run_offset_size;
         }
     }
@@ -185,10 +187,13 @@ void read_attribute(FILE* file, uint32_t start_mft, uint16_t attribute_offset) {
         }
         if(non_resident_flag == 1) {
             // printf("Non-resident\n");
-            fseek(file, offset + sizeof(attribute), SEEK_SET);
+            fseek(file, offset + sizeof(struct AttributeHeader), SEEK_SET);
+            // printf("Offset: %X\n", offset+sizeof(struct AttributeHeader));
             struct NonResident* non_resident = (struct NonResident*)malloc(sizeof(struct NonResident));
             fread(non_resident, sizeof(struct NonResident), 1, file);
             uint16_t runlist_offset = ltob_16(non_resident->runListOffset);
+            // printf("Offset: %X\n", offset);
+            // printf("Runlist offset: %X\n", runlist_offset);
             read_runlist(file, offset, runlist_offset);
             offset += attribute_length;
             free(non_resident);
